@@ -6,6 +6,11 @@ from google import genai
 from google.genai import types
 from PIL import Image
 from dotenv import load_dotenv
+from pydantic import BaseModel
+
+
+class SlideImagePrompt(BaseModel):
+    slide_prompt: str
 
 load_dotenv()
 
@@ -94,19 +99,22 @@ if st.button("✨ プロンプト案を生成", disabled=not can_generate_prompt
             client = genai.Client(api_key=gemini_key)
             result = client.models.generate_content(
                 model="gemini-2.5-flash-lite",
-                contents=f"""あなたはJTCに勤務するわかりやすいスライドを作れるシニアコンサルタントです。
+                contents=f"依頼主からの要望：\n{requirements}",
+                config=types.GenerateContentConfig(
+                    system_instruction="""あなたはJTCに勤務するわかりやすいスライドを作れるシニアコンサルタントです。
 依頼主から、とあるスライド1枚に貼るための画像（中身はテキストでもよく自由）を用意するよう言われています。
 どのような画像を用意すると良さそうか、文字や図解の配置などを言葉で表現してください。
-
-依頼主からの要望：
-{requirements}
 
 条件：
 - スライド16:9に使用します。
 - 出力は日本語でお願いします。
-- スライドのカラーはコーポレートカラーの青色もしくはモノクロを使用するように言われています""",
+- スライドのカラーはコーポレートカラーの青色もしくはモノクロを使用するように言われています。
+- 依頼主は手元にスライドテンプレートがあるため、ヘッダーやフッターに関する情報は不要です。中央メイン部分のみ検討してください。""",
+                    response_mime_type="application/json",
+                    response_schema=SlideImagePrompt,
+                ),
             )
-            generated = result.text.strip()
+            generated = result.parsed.slide_prompt
             st.session_state.generated_prompt = generated
             st.session_state.edited_prompt_area = generated
         except Exception as e:

@@ -1,10 +1,9 @@
 import os
-import base64
 from io import BytesIO
 
 import streamlit as st
-import google.generativeai as genai
-from google.generativeai import types
+from google import genai
+from google.genai import types
 from PIL import Image
 from dotenv import load_dotenv
 
@@ -92,10 +91,10 @@ can_generate_prompt = bool(gemini_key and requirements)
 if st.button("✨ プロンプト案を生成", disabled=not can_generate_prompt):
     with st.spinner("Gemini がプロンプトを考えています..."):
         try:
-            genai.configure(api_key=gemini_key)
-            text_model = genai.GenerativeModel("gemini-2.5-flash-lite")
-            result = text_model.generate_content(
-                f"""以下の要件を元に、画像生成AIへの英語プロンプトを1つ作成してください。
+            client = genai.Client(api_key=gemini_key)
+            result = client.models.generate_content(
+                model="gemini-2.5-flash-lite",
+                contents=f"""以下の要件を元に、画像生成AIへの英語プロンプトを1つ作成してください。
 
 要件：
 {requirements}
@@ -105,7 +104,7 @@ if st.button("✨ プロンプト案を生成", disabled=not can_generate_prompt
 - プロンプトは英語で書いてください
 - 200〜350単語程度
 - 具体的なビジュアル表現を含めてください（色、雰囲気、スタイル、構図など）
-- プロンプトのみ出力し、説明文や前置きは不要です"""
+- プロンプトのみ出力し、説明文や前置きは不要です""",
             )
             generated = result.text.strip()
             st.session_state.generated_prompt = generated
@@ -134,20 +133,16 @@ can_generate_image = bool(gemini_key and edited_prompt)
 if st.button("🎨 画像を生成", type="primary", disabled=not can_generate_image):
     with st.spinner("Nano Banana Pro が画像を生成しています（16:9）..."):
         try:
-            genai.configure(api_key=gemini_key)
-            model = genai.GenerativeModel("gemini-3-pro-image-preview")
+            client = genai.Client(api_key=gemini_key)
 
-            full_prompt = (
-                edited_prompt.strip()
-                + " The image must be in 16:9 landscape aspect ratio, "
-                "suitable for a presentation slide. "
-                "High quality, professional, clean composition."
-            )
-
-            response = model.generate_content(
-                full_prompt,
-                generation_config=types.GenerationConfig(
-                    response_modalities=["image", "text"],
+            response = client.models.generate_content(
+                model="gemini-3-pro-image-preview",
+                contents=edited_prompt.strip(),
+                config=types.GenerateContentConfig(
+                    response_modalities=["IMAGE", "TEXT"],
+                    image_config=types.ImageConfig(
+                        aspect_ratio="16:9",
+                    ),
                 ),
             )
 
@@ -158,7 +153,7 @@ if st.button("🎨 画像を生成", type="primary", disabled=not can_generate_i
                     break
 
             if image_data:
-                image = Image.open(BytesIO(base64.b64decode(image_data)))
+                image = Image.open(BytesIO(image_data))
                 st.session_state.gallery.insert(0, {
                     "prompt": edited_prompt.strip(),
                     "image": image,
@@ -230,4 +225,4 @@ if st.session_state.gallery and st.button("🗑️ 履歴をクリア"):
 
 # --- フッター ---
 st.markdown("---")
-st.caption("プロンプト生成: Gemini 2.5 Flash Lite ／ 画像生成: Gemini 3 Pro Image (Nano Banana Pro, Google)")
+st.caption("プロンプト生成: Gemini 2.5 Flash Lite ／ 画像生成: Gemini 3 Pro Image Preview (Nano Banana Pro, Google)")

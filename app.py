@@ -107,7 +107,9 @@ if st.button("✨ プロンプト案を生成", disabled=not can_generate_prompt
 - 具体的なビジュアル表現を含めてください（色、雰囲気、スタイル、構図など）
 - プロンプトのみ出力し、説明文や前置きは不要です"""
             )
-            st.session_state.generated_prompt = result.text.strip()
+            generated = result.text.strip()
+            st.session_state.generated_prompt = generated
+            st.session_state.edited_prompt_area = generated
         except Exception as e:
             st.error(f"エラーが発生しました: {e}")
             st.info("よくある原因: APIキーが無効、またはGemini APIの利用制限に達した可能性があります。")
@@ -216,6 +218,7 @@ if len(st.session_state.gallery) > 1:
             with col_reuse:
                 if st.button("🔄 このプロンプトを再利用", key=f"reuse_{i}"):
                     st.session_state.generated_prompt = entry["prompt"]
+                    st.session_state.edited_prompt_area = entry["prompt"]
                     st.rerun()
 
             st.caption("使用プロンプト:")

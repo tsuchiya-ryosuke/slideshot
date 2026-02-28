@@ -65,7 +65,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("**使用モデル**")
-    st.markdown("- プロンプト生成: `gemini-2.0-flash-lite`")
+    st.markdown("- プロンプト生成: `gemini-2.5-flash-lite-preview-06-17`")
     st.markdown("- 画像生成: `gemini-3-pro-image-preview`")
 
 # セッション初期化
@@ -93,7 +93,7 @@ if st.button("✨ プロンプト案を生成", disabled=not can_generate_prompt
     with st.spinner("Gemini がプロンプトを考えています..."):
         try:
             genai.configure(api_key=gemini_key)
-            text_model = genai.GenerativeModel("gemini-2.0-flash-lite")
+            text_model = genai.GenerativeModel("gemini-2.5-flash-lite-preview-06-17")
             result = text_model.generate_content(
                 f"""以下の要件を元に、画像生成AIへの英語プロンプトを1つ作成してください。
 

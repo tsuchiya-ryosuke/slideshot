@@ -17,6 +17,27 @@ st.set_page_config(
     layout="wide",
 )
 
+# --- ベーシック認証 ---
+AUTH_ID = os.getenv("AUTH_ID", "")
+AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "")
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.title("🔒 ログイン")
+    with st.form("login_form"):
+        input_id = st.text_input("ID")
+        input_pw = st.text_input("パスワード", type="password")
+        submitted = st.form_submit_button("ログイン")
+        if submitted:
+            if input_id == AUTH_ID and input_pw == AUTH_PASSWORD:
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("IDまたはパスワードが違います")
+    st.stop()
+
 st.title("🖼️ SlideShot")
 st.caption("スライド用の画像を、要件からワンストップで生成します。")
 

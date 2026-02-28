@@ -65,7 +65,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("**使用モデル**")
     st.markdown("- プロンプト生成: `gemini-2.5-flash-lite`")
-    st.markdown("- 画像生成: `gemini-2.0-flash-preview-image-generation`")
+    st.markdown("- 画像生成: `gemini-3-pro-image-preview`")
 
 # セッション初期化
 if "gallery" not in st.session_state:
@@ -135,18 +135,14 @@ if st.button("🎨 画像を生成", type="primary", disabled=not can_generate_i
         try:
             client = genai.Client(api_key=gemini_key)
 
-            full_prompt = (
-                edited_prompt.strip()
-                + " The image must be in 16:9 landscape aspect ratio, "
-                "suitable for a presentation slide. "
-                "High quality, professional, clean composition."
-            )
-
             response = client.models.generate_content(
-                model="gemini-2.0-flash-preview-image-generation",
-                contents=full_prompt,
+                model="gemini-3-pro-image-preview",
+                contents=edited_prompt.strip(),
                 config=types.GenerateContentConfig(
                     response_modalities=["IMAGE", "TEXT"],
+                    image_config=types.ImageConfig(
+                        aspect_ratio="16:9",
+                    ),
                 ),
             )
 
@@ -229,4 +225,4 @@ if st.session_state.gallery and st.button("🗑️ 履歴をクリア"):
 
 # --- フッター ---
 st.markdown("---")
-st.caption("プロンプト生成: Gemini 2.5 Flash Lite ／ 画像生成: Gemini 2.0 Flash Preview Image Generation (Google)")
+st.caption("プロンプト生成: Gemini 2.5 Flash Lite ／ 画像生成: Gemini 3 Pro Image Preview (Nano Banana Pro, Google)")

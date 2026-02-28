@@ -14,6 +14,10 @@
 
 **現在 SlideShot で使用しているモデル: `gemini-3-pro-image-preview`**
 
+> ⚠️ **重要: API・モデルを勝手に変更しないこと**
+> 疎通確認済みの構成（SDK: `google-genai`、モデル: `gemini-3-pro-image-preview`）は動作確認済みです。
+> 明示的な指示がない限り、API・SDK・モデル名を変更してはなりません。
+
 ### テキスト生成モデル（プロンプト生成用）
 
 | モデル名 | 特徴 |

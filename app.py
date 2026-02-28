@@ -43,103 +43,24 @@ with st.sidebar:
     st.markdown("- プロンプト生成: `gemini-2.0-flash`")
     st.markdown("- 画像生成: `gemini-3-pro-image-preview`")
 
-# --- スタイルプリセット定義 ---
-MOOD_PRESETS = {
-    "ミニマル": "minimalist, clean, lots of whitespace, simple shapes",
-    "コーポレート": "corporate, professional, business-oriented, polished",
-    "クリエイティブ": "creative, artistic, expressive, unique design",
-    "テック": "technology, futuristic, digital, data-driven, modern",
-    "アカデミック": "academic, scholarly, structured, informative",
-}
-
-COLOR_PRESETS = {
-    "ライト": "light background, white tones, airy, bright",
-    "ダーク": "dark background, deep colors, dramatic lighting",
-    "カラフル": "vibrant colors, colorful, bold palette",
-    "モノクロ": "monochrome, black and white, grayscale",
-}
-
-LAYOUT_PRESETS = {
-    "フラット": "flat design, 2D, geometric shapes",
-    "グラジエント": "gradient colors, smooth transitions, flowing",
-    "写真風": "photorealistic, cinematic, photo-like quality",
-    "イラスト風": "illustration style, vector art, hand-drawn feel",
-}
-
 # セッション初期化
 if "gallery" not in st.session_state:
     st.session_state.gallery = []  # [{prompt, image, timestamp}, ...]
 if "generated_prompt" not in st.session_state:
     st.session_state.generated_prompt = ""
 
-# --- Step 1: 要件 & スタイル入力 ---
 st.markdown("---")
-st.subheader("Step 1｜要件とスタイルを入力する")
 
-col_req, col_style = st.columns([3, 2])
-
-with col_req:
-    requirements = st.text_area(
-        "欲しい画像の要件（箇条書きでOK）",
-        height=180,
-        placeholder="""例：
+requirements = st.text_area(
+    "欲しい画像の要件（箇条書きでOK）",
+    height=180,
+    placeholder="""例：
 - テクノロジー系スライドに使いたい
 - 抽象的なネットワーク・接続のイメージ
 - ダークブルー系の配色
 - 人物は不要
 - シンプルでクリーン、余白が多めがよい""",
-    )
-
-with col_style:
-    st.markdown("**スタイルプリセット（任意・複数選択可）**")
-
-    st.markdown("*雰囲気*")
-    selected_mood = st.radio(
-        "雰囲気",
-        options=["指定なし"] + list(MOOD_PRESETS.keys()),
-        horizontal=True,
-        label_visibility="collapsed",
-    )
-
-    st.markdown("*配色*")
-    selected_color = st.radio(
-        "配色",
-        options=["指定なし"] + list(COLOR_PRESETS.keys()),
-        horizontal=True,
-        label_visibility="collapsed",
-    )
-
-    st.markdown("*レイアウト*")
-    selected_layout = st.radio(
-        "レイアウト",
-        options=["指定なし"] + list(LAYOUT_PRESETS.keys()),
-        horizontal=True,
-        label_visibility="collapsed",
-    )
-
-# 選択済みスタイルのサマリ表示
-selected_styles = []
-if selected_mood != "指定なし":
-    selected_styles.append(f"**{selected_mood}**")
-if selected_color != "指定なし":
-    selected_styles.append(f"**{selected_color}**")
-if selected_layout != "指定なし":
-    selected_styles.append(f"**{selected_layout}**")
-if selected_styles:
-    st.info(f"選択中のスタイル: {' / '.join(selected_styles)}")
-
-# --- Step 2: プロンプト生成 ---
-st.markdown("---")
-st.subheader("Step 2｜画像生成プロンプトを生成する")
-
-style_hint_parts = []
-if selected_mood != "指定なし":
-    style_hint_parts.append(f"雰囲気: {selected_mood}（{MOOD_PRESETS[selected_mood]}）")
-if selected_color != "指定なし":
-    style_hint_parts.append(f"配色: {selected_color}（{COLOR_PRESETS[selected_color]}）")
-if selected_layout != "指定なし":
-    style_hint_parts.append(f"レイアウト: {selected_layout}（{LAYOUT_PRESETS[selected_layout]}）")
-style_hint = "\n".join(style_hint_parts) if style_hint_parts else "（スタイル指定なし）"
+)
 
 can_generate_prompt = bool(gemini_key and requirements)
 
@@ -148,12 +69,11 @@ if st.button("✨ プロンプト案を生成", disabled=not can_generate_prompt
         try:
             genai.configure(api_key=gemini_key)
             text_model = genai.GenerativeModel("gemini-2.0-flash")
-            style_section = f"\nスタイル指定:\n{style_hint}" if style_hint_parts else ""
             result = text_model.generate_content(
                 f"""以下の要件を元に、画像生成AIへの英語プロンプトを1つ作成してください。
 
 要件：
-{requirements}{style_section}
+{requirements}
 
 条件：
 - スライド（16:9）に使用する画像です
@@ -180,9 +100,7 @@ if edited_prompt:
         st.code(edited_prompt, language=None)
         st.caption("上のテキストをコピーしてください。")
 
-# --- Step 3: 画像生成 ---
 st.markdown("---")
-st.subheader("Step 3｜画像を生成する")
 
 can_generate_image = bool(gemini_key and edited_prompt)
 

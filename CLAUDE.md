@@ -97,6 +97,77 @@ for part in response.candidates[0].content.parts:
 
 ---
 
+---
+
+## Claude へのルール（厳守）
+
+### API・モデルを変更しないこと
+
+- **画像生成モデルは `gemini-3-pro-image-preview` で固定**
+- **プロンプト生成モデルは `gemini-2.5-flash-lite` で固定**
+- 明示的な指示がない限り、モデル名・API エンドポイント・SDK を変更してはならない
+- `google-genai` SDK を使い続けること（`google-generativeai` への差し戻し禁止）
+
+---
+
+## プロンプト精度・画像品質の改善方針
+
+### 1. プロンプト生成精度を上げる
+
+#### 1-1. システムプロンプトの強化
+現在のプロンプト生成指示は汎用的。以下の要素を明示的に指示すると精度が上がる：
+
+- **構図の指定**: 主役の配置（中央・左寄り・三分割など）
+- **テキストスペースの確保**: "leave clean space in the upper-left for title text overlay"
+- **スライド特有の制約**: 余白・テキスト干渉を避ける旨を毎回含める
+- **ネガティブ要素の明示**: "no text, no watermark, no busy background"
+
+#### 1-2. Few-shot 例示の挿入
+プロンプト生成 LLM へのリクエストに、良質なプロンプト例を 1〜2 件含めると出力が安定する。
+
+```
+例：
+A dark navy blue abstract background with soft glowing geometric shapes,
+clean professional look, wide 16:9 format, left side has minimal clean space
+for title overlay, subtle gradient from deep blue to midnight purple,
+no text, no watermark, photorealistic lighting.
+```
+
+#### 1-3. ユーザー入力の構造化
+自由記述をそのまま渡すより、カテゴリに分けて収集すると LLM が解釈しやすい：
+
+| 入力項目 | 例 |
+|---|---|
+| テーマ・用途 | "テクノロジー系の企業紹介スライド" |
+| 配色 | "ダークブルー × ゴールド" |
+| 雰囲気 | "モダン・未来的・プロフェッショナル" |
+| 避けたいもの | "人物なし・文字なし" |
+| 構図の好み | "左上にタイトル用の余白が欲しい" |
+
+---
+
+### 2. 画像生成精度を上げる
+
+#### 2-1. プロンプトの英語品質
+- 日本語混じりや機械翻訳調の英語は避ける
+- 形容詞を重ねすぎない（5〜8 個程度が限界）
+- "cinematic", "award-winning", "ultra-detailed" などの過剰な修飾語は逆効果になる場合あり
+
+#### 2-2. 解像度とアスペクト比
+- スライド画像は `aspect_ratio="16:9"`, `image_size="2K"` が品質とコストのバランス点
+- 確認用途なら `"1K"` でコスト削減も可
+
+#### 2-3. Temperature / Thinking の活用
+- `gemini-3-pro-image-preview` は Thinking 機能付き
+- 複雑な構図指定の場合は `thinking_config` を有効化することで構図の解釈精度が上がる可能性あり（要検証）
+
+#### 2-4. プロンプトの反復改善ループ
+1. 生成された画像と元のプロンプトをペアで保存（ギャラリー機能で実装済み）
+2. 気に入ったプロンプトのパターンを抽出
+3. Few-shot 例示（1-2 参照）としてフィードバックする
+
+---
+
 ## 参考リンク
 
 - [Gemini API モデル一覧](https://ai.google.dev/gemini-api/docs/models)

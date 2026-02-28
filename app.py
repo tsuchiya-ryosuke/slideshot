@@ -21,6 +21,10 @@ st.set_page_config(
 AUTH_ID = os.getenv("AUTH_ID", "")
 AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "")
 
+if not AUTH_ID or not AUTH_PASSWORD:
+    st.error("サーバーの設定が不完全です。管理者に連絡してください。")
+    st.stop()
+
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 

@@ -138,9 +138,17 @@ if st.button("🎨 画像を生成", type="primary", disabled=not can_generate_i
         try:
             client = genai.Client(api_key=gemini_key)
 
+            image_prompt = f"""あなたはJTCに勤務するシニアコンサルタントです。
+とあるスライド1枚の中央メインの作成を担当しています。
+手元にはスライドテンプレートがありヘッダーやフッターはそれを流用できるため、今回生成する画像には含めないようにしてください。
+また、背景色は必ず白色で、図解やテキストはコーポレートカラーの青色およびモノクロにし、コーポレートブランドを棄損しない、シンプルで読みやすいものを作成してください。
+
+以下はスライド案です。
+{edited_prompt.strip()}"""
+
             response = client.models.generate_content(
                 model="gemini-3-pro-image-preview",
-                contents=edited_prompt.strip(),
+                contents=image_prompt,
                 config=types.GenerateContentConfig(
                     response_modalities=["IMAGE", "TEXT"],
                     image_config=types.ImageConfig(

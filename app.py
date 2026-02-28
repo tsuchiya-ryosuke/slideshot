@@ -129,11 +129,6 @@ edited_prompt = st.text_area(
     key="edited_prompt_area",
 )
 
-if edited_prompt:
-    if st.button("📋 プロンプトをコピー"):
-        st.code(edited_prompt, language=None)
-        st.caption("上のテキストをコピーしてください。")
-
 st.markdown("---")
 
 can_generate_image = bool(gemini_key and edited_prompt)

@@ -94,17 +94,17 @@ if st.button("✨ プロンプト案を生成", disabled=not can_generate_prompt
             client = genai.Client(api_key=gemini_key)
             result = client.models.generate_content(
                 model="gemini-2.5-flash-lite",
-                contents=f"""以下の要件を元に、画像生成AIへの英語プロンプトを1つ作成してください。
+                contents=f"""あなたはJTCに勤務するわかりやすいスライドを作れるシニアコンサルタントです。
+依頼主から、とあるスライド1枚に貼るための画像（中身はテキストでもよく自由）を用意するよう言われています。
+どのような画像を用意すると良さそうか、文字や図解の配置などを言葉で表現してください。
 
-要件：
+依頼主からの要望：
 {requirements}
 
 条件：
-- スライド（16:9）に使用する画像です
-- プロンプトは英語で書いてください
-- 200〜350単語程度
-- 具体的なビジュアル表現を含めてください（色、雰囲気、スタイル、構図など）
-- プロンプトのみ出力し、説明文や前置きは不要です""",
+- スライド16:9に使用します。
+- 出力は日本語でお願いします。
+- スライドのカラーはコーポレートカラーの青色もしくはモノクロを使用するように言われています""",
             )
             generated = result.text.strip()
             st.session_state.generated_prompt = generated
